@@ -1,6 +1,7 @@
 .idea
 .gitignore
 .gitlab-ci.yml
+.env.example
+pg_data
 Dockerfile
-docker-compose.yml
 README.md

@@ -1,0 +1,6 @@
+.idea
+.gitignore
+.gitlab-ci.yml
+Dockerfile
+docker-compose.yml
+README.md

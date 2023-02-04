@@ -7,7 +7,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 from alembic import context
-from models import Customer, CustomerAccount, Currency, AccountOperation
+from src.models import Customer, CustomerAccount, Currency, AccountOperation
 
 
 config = context.config

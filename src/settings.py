@@ -32,7 +32,7 @@ class Settings(BaseSettings):
                f'@{values.get("POSTGRES_HOST")}:{values.get("POSTGRES_PORT")}/{values.get("POSTGRES_DB")}'
 
     class Config:
-        env_file = './.env'
+        env_file = 'src/.env'
         env_file_encoding = 'utf-8'
 
 

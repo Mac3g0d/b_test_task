@@ -3,7 +3,7 @@ import json
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from exceptions import ApiException
+from src.exceptions import ApiException
 
 
 class ErrorMiddleware(BaseHTTPMiddleware):

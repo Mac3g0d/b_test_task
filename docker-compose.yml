@@ -24,7 +24,8 @@ services:
       - postgres
     ports:
       - "8000:8000"
-
+    volumes:
+      - ./migrations/versions:/app/migrations/versions
 
 volumes:
   data:

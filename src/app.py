@@ -40,9 +40,11 @@ async def on_startup():
 
     # await init_db()
     setup_logger()
-    app.include_router(api_router)
-    app.start_time = datetime.now()
 
+
+app.start_time = datetime.now()
+
+app.include_router(api_router)
 
 app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY)
 app.add_middleware(

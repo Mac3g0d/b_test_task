@@ -17,6 +17,8 @@ alembic = "^1.9.2"
 pytest = "^7.2.1"
 pytest-asyncio = "^0.20.3"
 factory-boy = "^3.2.1"
+aiosqlite = "^0.18.0"
+async-factory-boy = "^1.0.0"
 
 
 [build-system]

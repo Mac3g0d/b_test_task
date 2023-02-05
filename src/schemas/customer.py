@@ -13,7 +13,7 @@ class CreateCustomer(CustomerBase):
 
 class ReadCustomer(CustomerBase):
     id: UUID
-    accounts: list[ReadCustomerAccount] | list = Field(alias='accounts')
+    accounts: list[ReadCustomerAccount] | list
 
 
 class ReadCustomers(BaseModel):

@@ -20,7 +20,7 @@ class ReadCustomerAccount(CustomerAccountBase):
     #customer: ReadCustomer
 
     currency: ReadCurrency
-    operations: list[ReadAccountOperation]
+    #operations: list[ReadAccountOperation]
     balance: Decimal | None
 
 

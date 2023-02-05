@@ -20,8 +20,7 @@ class CustomerAccount(CustomerAccountBase, table=True):
     customer_id: UUID = Field(nullable=False, foreign_key='customer.id')
     currency_id: UUID = Field(nullable=False, foreign_key='currency.id')
 
-    currency: "Currency" = Relationship()
-    customer: "Customer" = Relationship()
+    currency: "Currency" = Relationship(back_populates='customer_accounts')
 
     customers: list["Customer"] = Relationship(back_populates="accounts")
 

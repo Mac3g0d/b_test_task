@@ -28,17 +28,17 @@ class CustomerDAO(BaseDAO):
                           currency_name: Currency.name,
                           date: datetime.date):
         stmt = select(
-            func.distinct(self.model.name),
-            Currency.name,
+            func.distinct(self.model.name).label('customer_name'),
+            Currency.name.label('currency_name'),
             func.sum(
                 case(
                     ((AccountOperation.type == 'd')
-                     & (AccountOperation.created_at == func.DATE(date)), AccountOperation.amount),
+                     & (func.DATE(AccountOperation.created_at) == date), AccountOperation.amount),
                     ((AccountOperation.type == 'c') &
-                     (AccountOperation.created_at == func.DATE(date)), -AccountOperation.amount),
+                     (func.DATE(AccountOperation.created_at) == date), -AccountOperation.amount),
                     else_=0
-                ).label('profit_for_given_date')),
-            sa.func.sum(
+                )).label('profit_for_given_date'),
+            func.sum(
                 case((AccountOperation.type == 'd', AccountOperation.amount),
                      (AccountOperation.type == 'c', -AccountOperation.amount),
                      else_=0)
@@ -46,7 +46,5 @@ class CustomerDAO(BaseDAO):
         ).where(
             Currency.name == currency_name
         ).options(selectinload('*')).group_by(self.model.name, Currency.name,)
-        qq = (await session.execute(stmt)).all()
-        from pprint import pprint
-        pprint(qq)
-        return qq
+        profits = (await session.execute(stmt)).all()
+        return profits

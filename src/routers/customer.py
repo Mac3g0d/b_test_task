@@ -21,10 +21,8 @@ async def create_customer(request: Request, customer: CreateCustomer, session: A
 
 @router.get("/get_profits")
 async def get_profits(request: Request, currency_name: str, date: datetime.date, session: AsyncSession = Depends(get_session)):
-    print(123)
     profits = await DAO.get_profits(session, currency_name=currency_name, date=date)
-    print(profits)
-    return profits.dict()
+    return {'results': profits}
 
 
 @router.get("/", response_model=ReadCustomers)

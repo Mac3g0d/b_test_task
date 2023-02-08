@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import Body
@@ -19,6 +20,17 @@ class ReadCustomer(CustomerBase):
 class ReadDetailCustomer(CustomerBase):
     id: UUID
     accounts: list[ReadCustomerAccount] | list = Field(alias='accounts')
+
+
+class Profit(BaseModel):
+    customer_name: str
+    currency_name: str
+    profit_for_given_date: Decimal
+    balance_on_given_date: Decimal
+
+
+class Profits(BaseModel):
+    results: list[Profit]
 
 
 class ReadCustomers(BaseModel):

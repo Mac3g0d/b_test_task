@@ -2,12 +2,10 @@ from decimal import Decimal
 from uuid import UUID
 
 from fastapi import Body
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from ..models.customer_account import CustomerAccountBase
 from .currencies import ReadCurrency
-#from .customer import ReadCustomer
-from .account_operation import ReadAccountOperation
 
 
 class CreateCustomerAccount(BaseModel):
@@ -17,10 +15,7 @@ class CreateCustomerAccount(BaseModel):
 
 class ReadCustomerAccount(CustomerAccountBase):
     id: UUID
-    #customer: ReadCustomer
-
     currency: ReadCurrency
-    #operations: list[ReadAccountOperation]
     balance: Decimal | None
 
 

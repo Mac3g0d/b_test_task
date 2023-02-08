@@ -1,5 +1,6 @@
-from uuid import UUID, uuid4
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
+
 from sqlmodel import Field, SQLModel, Relationship
 
 if TYPE_CHECKING:
@@ -13,6 +14,8 @@ class CustomerBase(SQLModel):
 class Customer(CustomerBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
 
-    accounts: list["CustomerAccount"] = Relationship(back_populates="customers")
+    accounts: list["CustomerAccount"] | None = Relationship(back_populates="customer",
+                                                            sa_relationship_kwargs={'cascade': 'all, delete'})
+
 
 

@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 import pytest
 import pytest_asyncio
@@ -22,13 +23,13 @@ def event_loop():
     loop.close()
 
 
-@pytest_asyncio.fixture(name='session', scope='session', autouse=True)
+@pytest_asyncio.fixture(name='session', scope='function')
 async def db_session() -> AsyncSession:
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)
         await conn.run_sync(SQLModel.metadata.create_all)
 
-        async with async_session(bind=conn) as session:
+        async with async_session() as session:
             yield session
             await session.flush()
             await session.rollback()
@@ -47,12 +48,30 @@ def client_fixture(session: AsyncSession):
 
 @pytest_asyncio.fixture
 async def customer():
-    return await CustomerFactory.create()
+    usdt = await CurrencyFactory.create(name='USDT')
+    rub = await CurrencyFactory.create(name='RUB')
+    eur = await CurrencyFactory.create(name='EUR')
+    _customer = await CustomerFactory.create()
+    ac_usdt = await CustomerAccountFactory.create(currency_id=usdt.id, customer_id=_customer.id)
+    ac_rub = await CustomerAccountFactory.create(currency_id=rub.id, customer_id=_customer.id)
+    ac_eur = await CustomerAccountFactory.create(currency_id=eur.id, customer_id=_customer.id)
+
+    await AccountOperationFactory.create_batch(50, customer_account_id=ac_usdt.id, account=ac_usdt)
+    await AccountOperationFactory.create_batch(50, customer_account_id=ac_rub.id, account=ac_rub)
+    await AccountOperationFactory.create_batch(50, customer_account_id=ac_eur.id, account=ac_eur)
+
+
+    return _customer
 
 
 @pytest_asyncio.fixture
-async def customer_data():
-    return await CustomerFactory.build()
+async def many_customers():
+    return await CustomerFactory.create_batch(random.randrange(5, 25))
+
+
+@pytest.fixture
+def customer_data():
+    return CustomerFactory.build()
 
 
 @pytest_asyncio.fixture

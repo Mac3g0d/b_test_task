@@ -31,8 +31,7 @@ async def get_account_operation(request: Request, account_operation_id: UUID, se
 
 @router.patch("/{customer_account_id}", response_model=ReadAccountOperation)
 async def update_account_operation(request: Request, account_operation_id: UUID, account_operation: UpdateAccountOperation, session: AsyncSession = Depends(get_session)):
-    current_account_operation = await DAO.get(session=session, id=account_operation_id)
-    updated_account_operation = await DAO.update(session=session, obj_current=current_account_operation, obj_new=account_operation)
+    updated_account_operation = await DAO.update(session=session, obj_new=account_operation, id=account_operation_id)
     return updated_account_operation
 
 

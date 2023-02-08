@@ -1,11 +1,9 @@
 from uuid import UUID
-from datetime import datetime
 
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy import delete
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
-from sqlalchemy.orm import selectinload, joinedload
-from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 class BaseDAO:
@@ -19,11 +17,11 @@ class BaseDAO:
             *,
             id: UUID
     ):
-        response = await session.exec(
-            select(self.model).where(self.model.id == id).options(joinedload('*', innerjoin=True))
+        response = await session.scalar(
+            select(self.model).where(self.model.id == id).options(selectinload('*'))
         )
 
-        return response.first()
+        return response
 
     async def list(
             self,
@@ -32,7 +30,7 @@ class BaseDAO:
             limit: int = 100,
             offset: int = 0
     ):
-        response = await session.exec(
+        response = await session.scalars(
             select(self.model).offset(offset).limit(limit).options(selectinload('*'))
         )
 
@@ -41,14 +39,12 @@ class BaseDAO:
     async def create(
             self,
             session: AsyncSession,
-            *,
-            obj_in
+            obj_in,
+            **kwargs
     ):
-        db_obj = self.model.from_orm(obj_in)
-
+        db_obj = self.model(**obj_in.dict(), **kwargs)
         session.add(db_obj)
         await session.commit()
-        await session.refresh(db_obj)
 
         return db_obj
 
@@ -56,10 +52,9 @@ class BaseDAO:
             self,
             session: AsyncSession,
             *,
-            obj_current,
-            obj_new
+            id,
+            obj_new,
     ):
-        obj_data = jsonable_encoder(obj_current)
 
         if isinstance(obj_new, dict):
             update_data = obj_new
@@ -67,18 +62,9 @@ class BaseDAO:
         else:
             update_data = obj_new.dict(exclude_unset=True)
 
-        for field in obj_data:
-            if field in update_data:
-                setattr(obj_current, field, update_data[field])
+        await session.execute(update(self.model).where(self.model.id == id).values(**update_data))
 
-            if field == "updated_at":
-                setattr(obj_current, field, datetime.utcnow())
-
-        session.add(obj_current)
-        await session.commit()
-        await session.refresh(obj_current)
-
-        return obj_current
+        return await self.get(session, id=id)
 
     async def delete(self, session, *, id: UUID):
         instance = await self.get(session, id=id)
@@ -89,7 +75,7 @@ class BaseDAO:
                      session: AsyncSession,
                      *,
                      stmt):
-        response = await session.exec(
+        response = await session.execute(
             select(self.model).where(*stmt).options(selectinload('*'))
         )
 

@@ -19,6 +19,7 @@ pytest-asyncio = "^0.20.3"
 factory-boy = "^3.2.1"
 aiosqlite = "^0.18.0"
 async-factory-boy = "^1.0.0"
+sqlalchemy-utils = "^0.39.0"
 
 
 [build-system]

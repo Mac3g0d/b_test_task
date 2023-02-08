@@ -1,18 +1,22 @@
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+import sqlalchemy as sa
+from sqlalchemy import case
+from sqlalchemy_utils import aggregated
 from sqlmodel import Field, SQLModel, Relationship
-
+from .account_operation import AccountOperation
 
 if TYPE_CHECKING:
     from .currency import Currency
 
     from .customer import Customer
-    from .account_operation import AccountOperation
 
 
 class CustomerAccountBase(SQLModel):
-    pass
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class CustomerAccount(CustomerAccountBase, table=True):
@@ -22,8 +26,15 @@ class CustomerAccount(CustomerAccountBase, table=True):
 
     currency: "Currency" = Relationship(back_populates='customer_accounts')
 
-    customers: list["Customer"] = Relationship(back_populates="accounts")
+    customer: "Customer" = Relationship(back_populates="accounts")
 
-    operations: list["AccountOperation"] = Relationship(back_populates="account")
+    operations: list["AccountOperation"] | None = Relationship(back_populates="account",
+                                                               sa_relationship_kwargs={'cascade': 'all, delete'})
 
-
+    @aggregated('operations', sa.Column(sa.Numeric, nullable=False, default=0))
+    def balance(self):
+        return sa.func.sum(
+            case((AccountOperation.type == 'd', AccountOperation.amount),
+                 (AccountOperation.type == 'c', -AccountOperation.amount),
+                 else_=0)
+        )

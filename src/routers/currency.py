@@ -31,8 +31,7 @@ async def get_currency(request: Request, currency_id: UUID, session: AsyncSessio
 
 @router.patch("/{currency_id}", response_model=ReadCurrency)
 async def update_currency(request: Request, currency_id: UUID, currency: UpdateCurrency, session: AsyncSession = Depends(get_session)):
-    current_currency = await DAO.get(session=session, id=currency_id)
-    updated_currency = await DAO.update(session=session, obj_current=current_currency, obj_new=currency)
+    updated_currency = await DAO.update(session=session, id=currency_id, obj_new=currency)
     return updated_currency
 
 

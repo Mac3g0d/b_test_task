@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -29,6 +30,8 @@ class AccountOperation(AccountOperationBase, table=True):
     customer_account_id: UUID = Field(nullable=False, foreign_key='customeraccount.id')
 
     account: 'CustomerAccount' = Relationship(back_populates="operations")
+
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now, nullable=False)
 
     # @hybrid_property
     # def fact_amount(self) -> Decimal:

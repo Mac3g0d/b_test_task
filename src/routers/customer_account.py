@@ -25,15 +25,13 @@ async def get_customer_accounts(request: Request, limit: int = 100, offset: int 
 
 @router.get("/{customer_account_id}", response_model=ReadCustomerAccount)
 async def get_customer_account(request: Request, customer_account_id: UUID, session: AsyncSession = Depends(get_session)):
-    customer_account = await DAO.get_customer_account_detail(session=session, id=customer_account_id)
-    print(customer_account)
+    customer_account = await DAO.get(session=session, id=customer_account_id)
     return customer_account
 
 
 @router.patch("/{customer_account_id}", response_model=ReadCustomerAccount)
 async def update_customer(request: Request, customer_id: UUID, customer_account: UpdateCustomerAccount, session: AsyncSession = Depends(get_session)):
-    current_customer_account = await DAO.get(session=session, id=customer_id)
-    updated_customer_account = await DAO.update(session=session, obj_current=current_customer_account, obj_new=customer_account)
+    updated_customer_account = await DAO.update(session=session, id=customer_id, obj_new=customer_account)
     return updated_customer_account
 
 

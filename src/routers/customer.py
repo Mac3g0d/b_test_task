@@ -1,11 +1,13 @@
+import datetime
 from uuid import UUID
 
-from fastapi import Request, APIRouter, Depends
+from fastapi import Request, APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import Response
 
 from ..db.database import get_session
 from ..services.DAO import CustomerDAO
-from ..schemas import CreateCustomer, ReadCustomer, ReadCustomers, UpdateCustomer
+from ..schemas import CreateCustomer, ReadCustomer, ReadCustomers, UpdateCustomer, ReadDetailCustomer
 
 router = APIRouter()
 DAO = CustomerDAO()
@@ -13,8 +15,16 @@ DAO = CustomerDAO()
 
 @router.post("/", response_model=ReadCustomer, status_code=201)
 async def create_customer(request: Request, customer: CreateCustomer, session: AsyncSession = Depends(get_session)):
-    created_customer = await DAO.create(session=session, obj_in=customer)
+    created_customer = await DAO.create(session=session, obj_in=customer, accounts=[])
     return created_customer
+
+
+@router.get("/get_profits")
+async def get_profits(request: Request, currency_name: str, date: datetime.date, session: AsyncSession = Depends(get_session)):
+    print(123)
+    profits = await DAO.get_profits(session, currency_name=currency_name, date=date)
+    print(profits)
+    return profits.dict()
 
 
 @router.get("/", response_model=ReadCustomers)
@@ -23,20 +33,22 @@ async def get_customers(request: Request, limit: int = 100, offset: int = 0, ses
     return {'results': customers or []}
 
 
-@router.get("/{customer_id}", response_model=ReadCustomer)
-async def get_customer(request: Request, customer_id: UUID, session: AsyncSession = Depends(get_session)):
+@router.get("/{customer_id}", response_model=ReadDetailCustomer | None)
+async def get_customer(request: Request, customer_id: UUID = Path(), session: AsyncSession = Depends(get_session)):
     customer = await DAO.get_customer_detail(session=session, id=customer_id)
-    return customer
+    print(customer)
+    if customer:
+        return customer
+    return Response('customer not found', status_code=400)
 
 
 @router.patch("/{customer_id}", response_model=ReadCustomer)
-async def update_customer(request: Request, customer_id: UUID, customer: UpdateCustomer, session: AsyncSession = Depends(get_session)):
-    current_customer = await DAO.get(session=session, id=customer_id)
-    updated_customer = await DAO.update(session=session, obj_current=current_customer, obj_new=customer)
+async def update_customer(request: Request, customer: UpdateCustomer, customer_id: UUID = Path(), session: AsyncSession = Depends(get_session)):
+    updated_customer = await DAO.update(session=session, obj_new=customer, id=customer_id)
     return updated_customer
 
 
 @router.delete("/{customer_id}", status_code=204)
-async def delete_customer(request: Request, customer_id: UUID, session: AsyncSession = Depends(get_session)) -> None:
+async def delete_customer(request: Request, customer_id: UUID = Path(), session: AsyncSession = Depends(get_session)) -> None:
     await DAO.delete(session=session, id=customer_id)
 

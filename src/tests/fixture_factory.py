@@ -3,9 +3,9 @@ from decimal import Decimal
 
 from async_factory_boy.factory.sqlalchemy import AsyncSQLAlchemyFactory
 from factory import Faker, SubFactory, LazyFunction
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlmodel.ext.asyncio.session import AsyncSession
+
 
 from ..models import Customer, CustomerAccount, Currency, AccountOperation
 
@@ -24,7 +24,7 @@ class SAFactory(AsyncSQLAlchemyFactory):
     class Meta:
         abstract = True
         sqlalchemy_session = async_session()
-
+        sqlalchemy_session_persistence = "commit"
 
 class CustomerFactory(SAFactory):
     id = Faker('uuid4')
@@ -47,7 +47,6 @@ class CustomerAccountFactory(SAFactory):
     id = Faker('uuid4')
     customer_id = Faker('uuid4')
     currency_id = Faker('uuid4')
-    customer = SubFactory(CustomerFactory)
     currency = SubFactory(CurrencyFactory)
 
     class Meta:
@@ -58,7 +57,7 @@ class AccountOperationFactory(SAFactory):
     id = Faker('uuid4')
     customer_account_id = Faker('uuid4')
     account = SubFactory(CustomerAccountFactory)
-    type = random.choice(['d', 'c'])
+    type = LazyFunction(lambda: random.choice(['d', 'c']))
     amount = LazyFunction(lambda: Decimal(f'{random.randrange(500)}.{random.randrange(500)}'))
 
     class Meta:

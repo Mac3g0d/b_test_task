@@ -14,8 +14,6 @@ class CreateAccountOperation(AccountOperationBase):
 class ReadAccountOperation(AccountOperationBase):
     id: UUID
     customer_account_id: UUID
-    # fact_amount: Decimal
-
 
 
 class ReadAccountOperations(BaseModel):

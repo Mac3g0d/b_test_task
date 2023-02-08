@@ -3,8 +3,8 @@ from uuid import UUID
 from fastapi import Body
 from pydantic import BaseModel, Field
 
-from ..models.customer import CustomerBase
 from .customer_account import ReadCustomerAccount
+from ..models.customer import CustomerBase
 
 
 class CreateCustomer(CustomerBase):
@@ -13,7 +13,12 @@ class CreateCustomer(CustomerBase):
 
 class ReadCustomer(CustomerBase):
     id: UUID
-    accounts: list[ReadCustomerAccount] | list
+    accounts: list[ReadCustomerAccount] | list = Field(alias='accounts')
+
+
+class ReadDetailCustomer(CustomerBase):
+    id: UUID
+    accounts: list[ReadCustomerAccount] | list = Field(alias='accounts')
 
 
 class ReadCustomers(BaseModel):

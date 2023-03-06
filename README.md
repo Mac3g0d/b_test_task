@@ -11,4 +11,7 @@ requires
  * pandas
  
 Run commands
-docker-compose up
+
+`docker-compose up -d postgres`
+
+`docker-compose up --build api`

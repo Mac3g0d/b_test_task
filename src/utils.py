@@ -1,7 +1,7 @@
 import logging
 import random
+from decimal import Decimal, ROUND_HALF_EVEN
 
-import httpx
 from fastapi.logger import logger
 
 from .models import Customer, Currency, CustomerAccount, AccountOperation
@@ -12,6 +12,12 @@ def setup_logger():
     uvicorn_access_logger = logging.getLogger("uvicorn.access")
     uvicorn_access_logger.handlers = gunicorn_error_logger.handlers
     logger.handlers = gunicorn_error_logger.handlers
+
+
+def round_decimal(numbers: Decimal, decimal_places: int) -> Decimal:
+    return Decimal(numbers).quantize(
+        Decimal(10) ** -decimal_places, ROUND_HALF_EVEN
+    )
 
 
 async def init(session):
@@ -30,16 +36,3 @@ async def init(session):
     await session.commit()
 
 
-async def main():
-    async with httpx.AsyncClient(base_url='http://localhost:8000') as client:
-        for _ in range(500):
-            r = await client.post('/api/v1/account_operations', json={
-                "type": "d",
-                "amount": random.randrange(0, 12345),
-                "customer_account_id": "247ac096-5d56-4dcd-96aa-239b2474728e"}, follow_redirects=True)
-            print(r.status_code)
-
-if __name__ == '__main__':
-    import asyncio
-
-    asyncio.run(main())

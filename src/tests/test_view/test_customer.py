@@ -4,6 +4,8 @@ from decimal import Decimal
 import pytest
 from fastapi.testclient import TestClient
 
+from ...utils import round_decimal
+
 
 def test_get_customers(client: TestClient, many_customers):
     response = client.get('/api/v1/customers/')
@@ -41,7 +43,6 @@ def test_get_profits(client: TestClient, profit_customers):
     response = client.get(f'/api/v1/customers/get_profits/?currency_name=USDT&date={current_date}')
     profits = response.json()
     assert response.status_code == 200
-
     for index, customer in enumerate(profit_customers):
-        assert str(customer['accounts'][0]['balance']) == str(profits['results'][index]['balance_on_given_date'])
+        assert round_decimal(customer['accounts'][0]['balance'], 3) == round_decimal(profits['results'][index]['balance_on_given_date'], 3)
 

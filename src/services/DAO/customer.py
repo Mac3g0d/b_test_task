@@ -1,10 +1,8 @@
 from datetime import datetime
 
-import sqlalchemy as sa
 from sqlalchemy import case, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
 from .base import BaseDAO
 from ...models import Customer, Currency, AccountOperation, CustomerAccount
 
@@ -18,7 +16,7 @@ class CustomerDAO(BaseDAO):
                                   session: AsyncSession,
                                   *,
                                   id):
-        customer_stmt = sa.select(self.model).where(self.model.id == id).options(selectinload('*'))
+        customer_stmt = select(self.model).where(self.model.id == id).options(selectinload('*'))
         customer = (await session.scalars(customer_stmt)).first()
         return customer
 
@@ -27,6 +25,8 @@ class CustomerDAO(BaseDAO):
                           *,
                           currency_name: Currency.name,
                           date: datetime.date):
+
+
         stmt = select(
             func.distinct(self.model.name).label('customer_name'),
             Currency.name.label('currency_name'),
@@ -34,17 +34,18 @@ class CustomerDAO(BaseDAO):
                 case(
                     ((AccountOperation.type == 'd')
                      & (func.DATE(AccountOperation.created_at) == date), AccountOperation.amount),
-                    ((AccountOperation.type == 'c') &
-                     (func.DATE(AccountOperation.created_at) == date), -AccountOperation.amount),
+                    ((AccountOperation.type == 'c')
+                     & (func.DATE(AccountOperation.created_at) == date), -AccountOperation.amount),
                     else_=0
                 )).label('profit_for_given_date'),
             func.sum(
-                case((AccountOperation.type == 'd', AccountOperation.amount),
-                     (AccountOperation.type == 'c', -AccountOperation.amount),
+                case(((AccountOperation.type == 'd')
+                      & (func.DATE(AccountOperation.created_at) <= date), AccountOperation.amount),
+                     ((AccountOperation.type == 'c')
+                      & (func.DATE(AccountOperation.created_at) <= date), -AccountOperation.amount),
                      else_=0)
-            ).label('balance_on_given_date')
-        ).where(
-            Currency.name == currency_name
-        ).options(selectinload('*')).group_by(self.model.name, Currency.name,)
+            ).label('balance_on_given_date'))\
+            .join(self.model.accounts).join(CustomerAccount.operations) \
+            .where(Currency.name == currency_name).group_by(self.model, Currency.name)
         profits = (await session.execute(stmt)).all()
         return profits

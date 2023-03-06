@@ -1,3 +1,6 @@
+import datetime
+from decimal import Decimal
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -31,4 +34,14 @@ def test_update_customer(client: TestClient, customer):
 def test_delete_customer(client: TestClient, customer):
     fetched_customer = client.delete(f'/api/v1/customers/{customer.id}')
     assert fetched_customer.status_code == 204
+
+
+def test_get_profits(client: TestClient, profit_customers):
+    current_date = datetime.datetime.now().strftime('%d.%m.%Y')
+    response = client.get(f'/api/v1/customers/get_profits/?currency_name=USDT&date={current_date}')
+    profits = response.json()
+    assert response.status_code == 200
+
+    for index, customer in enumerate(profit_customers):
+        assert str(customer['accounts'][0]['balance']) == str(profits['results'][index]['balance_on_given_date'])
 

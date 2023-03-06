@@ -3,14 +3,11 @@ from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-# from sqladmin import Admin
-
 
 from .middlewares import ErrorMiddleware
 from .routers import api_router
 from .settings import get_settings
 from .utils import setup_logger
-# from admin_views import CustomerAdmin, CurrencyAdmin, CustomerAccountAdmin, AccountOperationAdmin
 
 settings = get_settings()
 
@@ -27,18 +24,9 @@ if settings.ENVIRONMENT not in settings.SHOW_DOCS_ENVIRONMENT:
 
 app = FastAPI(**app_config)
 
-# if settings.ENVIRONMENT in settings.SHOW_DOCS_ENVIRONMENT:
-#     admin = Admin(app, engine, title="Админ панель")
-#     admin.add_view(CustomerAdmin)
-#     admin.add_view(CurrencyAdmin)
-#     admin.add_view(CustomerAccountAdmin)
-#     admin.add_view(AccountOperationAdmin)
-
 
 @app.on_event("startup")
 async def on_startup():
-
-    # await init_db()
     setup_logger()
 
 

@@ -7,7 +7,7 @@ from starlette.responses import Response
 
 from ..db.database import get_session
 from ..services.DAO import CustomerDAO
-from ..schemas import CreateCustomer, ReadCustomer, ReadCustomers, UpdateCustomer, ReadDetailCustomer
+from ..schemas import CreateCustomer, ReadCustomer, ReadCustomers, UpdateCustomer, ReadDetailCustomer, GetProfitsQuery
 
 router = APIRouter()
 DAO = CustomerDAO()
@@ -20,8 +20,8 @@ async def create_customer(request: Request, customer: CreateCustomer, session: A
 
 
 @router.get("/get_profits")
-async def get_profits(request: Request, currency_name: str, date: datetime.date, session: AsyncSession = Depends(get_session)):
-    profits = await DAO.get_profits(session, currency_name=currency_name, date=date)
+async def get_profits(request: Request, query: GetProfitsQuery = Depends(GetProfitsQuery), session: AsyncSession = Depends(get_session)):
+    profits = await DAO.get_profits(session, currency_name=query.currency_name, date=query.date)
     return {'results': profits}
 
 

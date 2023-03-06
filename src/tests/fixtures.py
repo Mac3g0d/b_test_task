@@ -1,5 +1,7 @@
 import asyncio
+import datetime
 import random
+from uuid import UUID
 
 import pytest
 import pytest_asyncio
@@ -47,10 +49,22 @@ def client_fixture(session: AsyncSession):
 
 
 @pytest_asyncio.fixture
-async def customer():
-    usdt = await CurrencyFactory.create(name='USDT')
-    rub = await CurrencyFactory.create(name='RUB')
-    eur = await CurrencyFactory.create(name='EUR')
+async def usdt():
+    return await CurrencyFactory(name='USDT')
+
+
+@pytest_asyncio.fixture
+async def rub():
+    return await CurrencyFactory(name='RUB')
+
+
+@pytest_asyncio.fixture
+async def eur():
+    return await CurrencyFactory(name='EUR')
+
+
+@pytest_asyncio.fixture
+async def customer(usdt, rub, eur):
     _customer = await CustomerFactory.create()
     ac_usdt = await CustomerAccountFactory.create(currency_id=usdt.id, customer_id=_customer.id)
     ac_rub = await CustomerAccountFactory.create(currency_id=rub.id, customer_id=_customer.id)
@@ -59,7 +73,6 @@ async def customer():
     await AccountOperationFactory.create_batch(50, customer_account_id=ac_usdt.id, account=ac_usdt)
     await AccountOperationFactory.create_batch(50, customer_account_id=ac_rub.id, account=ac_rub)
     await AccountOperationFactory.create_batch(50, customer_account_id=ac_eur.id, account=ac_eur)
-
 
     return _customer
 
@@ -75,13 +88,44 @@ def customer_data():
 
 
 @pytest_asyncio.fixture
+async def profit_customers(usdt):
+    async def create_account_with_operations(currency_id: UUID, customer_id: UUID,
+                                             operation_created_at: datetime.datetime):
+        ca = await CustomerAccountFactory.create(currency_id=currency_id, customer_id=customer_id)
+        operations = await AccountOperationFactory.create_batch(50, customer_account_id=ca.id,
+                                                                account=ca,
+                                                                created_at=operation_created_at)
+        ca_dict = ca.dict()
+        ca_dict['operations'] = [operation.dict() for operation in operations]
+        for operation in operations:
+            ca_dict['operations'] = operation.dict()
+            if ca_dict.get('balance', None) is not None:
+                ca_dict['balance'] += operation.amount if operation.type == 'd' else -operation.amount
+            else:
+                ca_dict['balance'] = operation.amount if operation.type == 'd' else -operation.amount
+
+        return ca_dict
+
+    customers = await CustomerFactory.create_batch(random.randrange(5, 10))
+    detail_customers = []
+
+    for _customer in customers:
+        ac_rub = await create_account_with_operations(usdt.id, _customer.id, datetime.datetime.now())
+        _customer = _customer.dict()
+        _customer['accounts'] = [ac_rub]
+        detail_customers.append(_customer)
+
+    return sorted(detail_customers, key=lambda d: d['name'])
+
+
+@pytest_asyncio.fixture
 async def currency():
     return await CurrencyFactory()
 
 
-@pytest_asyncio.fixture
-async def currency_data():
-    return await CurrencyFactory.build()
+@pytest.fixture
+def currency_data():
+    return CurrencyFactory.build()
 
 
 @pytest_asyncio.fixture
@@ -89,9 +133,9 @@ async def customer_account():
     return await CustomerAccountFactory()
 
 
-@pytest_asyncio.fixture
-async def customer_account_data():
-    return await CustomerAccountFactory.build()
+@pytest.fixture
+def customer_account_data():
+    return CustomerAccountFactory.build()
 
 
 @pytest_asyncio.fixture
@@ -99,6 +143,6 @@ async def account_operation():
     return await AccountOperationFactory()
 
 
-@pytest_asyncio.fixture
-async def account_operation_data():
+@pytest.fixture
+def account_operation_data():
     return AccountOperationFactory.build()

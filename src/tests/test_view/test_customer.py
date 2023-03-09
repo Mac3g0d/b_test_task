@@ -1,7 +1,4 @@
 import datetime
-from decimal import Decimal
-
-import pytest
 from fastapi.testclient import TestClient
 
 from ...utils import round_decimal

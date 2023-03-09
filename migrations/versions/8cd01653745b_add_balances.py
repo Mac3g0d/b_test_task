@@ -7,7 +7,7 @@ Create Date: 2023-02-08 02:38:21.041295
 """
 from alembic import op
 import sqlalchemy as sa
-import sqlmodel
+import sqlmodel  # noqa: F401
 
 
 # revision identifiers, used by Alembic.

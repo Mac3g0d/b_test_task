@@ -1,13 +1,14 @@
-from .base_model import BaseModelView
 from models import Currency
+
+from .base_model import BaseModelView
 
 
 class CurrencyAdmin(BaseModelView, model=Currency):
-    name = 'Валюта'
-    name_plural = 'Валюты'
+    name = "Baлютa"
+    name_plural = "Baлюты"
 
     column_list = (
-        Currency.id, Currency.name, Currency.default
+        Currency.id, Currency.name, Currency.default,
     )
 
     column_searchable_list = column_list

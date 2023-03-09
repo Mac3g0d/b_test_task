@@ -1,3 +1,3 @@
-import pytest
+import pytest  # noqa: F401
 
-from .fixtures import *
+from .fixtures import *  # noqa: F403

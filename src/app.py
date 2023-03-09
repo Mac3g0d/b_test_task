@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,7 +14,7 @@ settings = get_settings()
 app_config = {
     "title": "Accountant",
     "version": "1.0.0",
-    "description": "API для манипуляции с балансом клиента",
+    "description": "API для мaнипyляции c 6aлaнcoм клиeнтa",
 
 }
 
@@ -26,11 +26,11 @@ app = FastAPI(**app_config)
 
 
 @app.on_event("startup")
-async def on_startup():
+async def on_startup() -> None:
     setup_logger()
 
 
-app.start_time = datetime.now()
+app.start_time = datetime.now(tz=timezone.utc)
 
 app.include_router(api_router)
 

@@ -20,7 +20,18 @@ factory-boy = "^3.2.1"
 aiosqlite = "^0.18.0"
 async-factory-boy = "^1.0.0"
 sqlalchemy-utils = "^0.39.0"
+ruff = "^0.0.254"
 
+[tool.ruff]
+select = [
+    "F", "E", "I", "N", "UP", "ANN",
+    "S", "BLE", "COM", "C4", "DTZ",
+    "RET", "Q", "T20", "G", "SLF", "SIM",
+    "ARG", "PTH", "RUF"
+]
+line-length = 140
+src = ["src"]
+exclude = ["__init__.py", "tests", "migrations"]
 
 [build-system]
 requires = ["poetry-core"]

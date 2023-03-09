@@ -1,1 +1,1 @@
-from .database import engine
+from .database import engine  # noqa: F401
